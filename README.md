@@ -5,7 +5,7 @@
 **Labs** is a framework that facilitates web extension development: Build with a bundler made for extensions, in a local preview environment. It supports Typescript and SCSS out-of-the-box, and also [Vue](https://vuejs.org/guide/scaling-up/sfc.html)-inspired single file components. Imagine [Vite](https://vite.dev), but for extensions.
 
 <p align="center">
-  <a href="#browser-webfuse-api" target="_blank"><img src="./.github/figure-1.png" alt="Labs' features: Bundler, SFCs, and Preview" width="675"></a>
+  <a href="#webfuse-labs" target="_blank"><img src="./.github/figure-1.png" alt="Labs' features: Bundler, SFCs, and Preview" width="700"></a>
 </p>
 
 1. [**Prerequisites**](#prerequisites)
@@ -60,7 +60,7 @@ labs preview
 
 The preview app is a browser application. Open the address that is printed to the console in a web browser. The preview environment implements hot module replacement. This is, the provided UI always presents the latest bundle.
 
-<a href="#local-development" target="_blank"><img src="./.github/figure-2.png" alt="Webfuse Labs Preview Environment"></a>
+<a href="#preview" target="_blank"><img src="./.github/figure-2.png" alt="Webfuse Labs Preview Environment"></a>
 
 > `labs` commands that affect a specific extension work in its root directory. With other words, the current working directory (`pwd`) needs to correspond to the extensions project's root directory.
 
@@ -209,22 +209,54 @@ A valid SFC file assembles from at most one of the following tags (top-level): `
 ### Content Augmentation
 
 The background and content script can optionally be grouped within directories, too. In case of a grouped content script, files to augmentat any individual content page can be placed in the `augmentation` subdirectory:
-> 
-> ```
-> .
-> └── /my-extension
->     ├── ...
->     └── /src
->         ├── ...
->         ├── /background                 # Optionally group background files
->         │   │   helpers.js              # Relative import helper modules
->         │   └── background.[js|ts]
->         └── /content                    # Optionally group content files
->             ├── augmentation            # UI augmentation files
->             │   ├── content.html
->             │   └── content.c[css|scss]
->             └── content.[js|ts]
-> ```
+
+```
+.
+└── /my-extension
+    ├── ...
+    └── /src
+        ├── ...
+        ├── /background                 # Optionally group background files
+        │   │   helpers.js              # Relative import helper modules
+        │   └── background.[js|ts]
+        └── /content                    # Optionally group content files
+            ├── augmentation            # UI augmentation files
+            │   ├── content.html
+            │   └── content.c[css|scss]
+            └── content.[js|ts]
+```
+
+Augmentation exists on top of actually browsed pages' content. It is encapsulated from the respective window scope, except for the accessor identifier `window.AUGMENTATION`. The accessor represents the root node (host) of the augmentation component DOM subtree.
+
+<sub><code>src/content/augmentation/content.html</code></sub>
+
+``` js
+<span id="dynamic"></span>
+```
+
+<sub><code>src/content/augmentation/content.css</code></sub>
+
+``` css
+:host {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+```
+
+<sub><code>src/content/content.js</code></sub>
+
+``` js
+document.addEventListener("DOMContentLoaded", () => {
+  window.AUGMENTATION
+    .querySelector("#dynamic")
+    .textContent = `Today is: ${new Date().toLocaleDateString()}`;
+});
+```
+
+<a href="#content-augmentation" target="_blank"><img src="./.github/figure-3.png" alt="Webfuse Labs Content Augmentation" width="500"></a>
+
+> The second layer of the lefthand side preview pane simulates how the extension works in a third-party page (content). Keep hovering a layer to activate it, i.e., move it to the top. 
 
 ### Icon
 
